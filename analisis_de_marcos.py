@@ -332,5 +332,36 @@ def main(argv):
 		barra = barras[i]
 		barra.crear_matriz_rigidez_elemento()
 
+	matriz_K_a = []
+	# recorremos los nodos para crear la matriz enorme 
+	i = 0
+	for nodo_i in nodos_a:
+
+		j = 0
+		columna = []
+		for nodo_j in nodos_a:
+			#elementos de la diagonal
+			if nodo_i ==  nodo_j:
+				_barras = nodos_a_procesar[nodo_i].keys()
+
+				matrices_a_sumar = ""
+
+				for x in _barras:
+					if nodos_a_procesar[nodo_i][x] == 'a':
+						matrices_a_sumar += (" KAA" + str(x))
+					else:
+						matrices_a_sumar += (" KBB" + str(x))
+
+				columna.append(matrices_a_sumar)
+			else:
+				columna.append("0")
+
+		matriz_K_a.append(columna)
+		j = j+1
+
+	i = i + 1
+
+	print np.matrix(matriz_K_a).transpose()
+
 if __name__ == '__main__':
 	main(sys.argv)		
