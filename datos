@@ -1,12 +1,13 @@
 
-//		#		X		Y		fx 		fy 		M
-nodo 	1 		0 		0 		u	 	u 		0
-nodo 	2 		2 		3.46	u 		0 		0
-nodo 	3 		2 		7.46 	0 		u 		0
-nodo 	4 		6 		3.46 	0 		u 		0
+//		#		X		Y	
+nodo 	1 		0 		0 	
+nodo 	2 		2 		3.46A
+nodo 	3 		2 		7.46 	
+nodo 	4 		6 		3.46 	
+nodo 	5 		6 		10	 	
 
-//		puntoA	tipo		puntoB 		type		E 	I	A	c_distribuidas	FxLocal		FyLocal		distA	#
-barra 	1 		empotrado 		2 		c_des 		1	1	10		0			-8.66			5			2	1
-barra 	2 		c_des			4 		empotrado	1	1	10		0				0			10			1	2
-barra 	2 		c_des			3 		empotrado	1	1	10		0				0			0			0	3
-
+//		puntoA	tipo		puntoB 		type		E 	I	A	Fdistribuidas	FxLocal		FyLocal		distA	#
+barra 	1 		empotrado 		2 		c_des 		1	1	10		u			-8.66			5			2	1
+barra 	2 		c_des			4 		empotrado	1	1	10		u				0			10			1	2
+barra 	2 		c_des			3 		empotrado	1	1	10		u				0			0			0	3
+barra 	4 		c_des			5		empotrado	1	1	10		u				0			0			0	4
