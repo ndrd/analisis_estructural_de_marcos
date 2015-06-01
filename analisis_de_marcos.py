@@ -392,7 +392,19 @@ def main(argv):
 		barras[barra].matriz_deltas = np.concatenate((barras[barra].matriz_deltaA, barras[barra].matriz_deltaB), axis=0)
 
 		barras[barra].vector_fuerzas = np.dot(barras[barra].Ksss, barras[barra].matriz_deltas)
-		print barras[barra].vector_fuerzas, "\n"
+
+		barras[barra].vector_fuerzasA =  np.dot(barras[barra].matriz_transformada, barras[barra].vector_fuerzas[:3])
+		barras[barra].vector_fuerzasB =  np.dot(barras[barra].matriz_transformada, barras[barra].vector_fuerzas[3:])
+
+		barras[barra].matriz_fuerzas_empotramiento_B  + barras[barra].vector_fuerzasB
+
+		print "Barra ", i+1
+		
+		print "FA:\n" , barras[barra].matriz_fuerzas_empotramiento_A  + barras[barra].vector_fuerzasA
+		print "FA:\n" , barras[barra].matriz_fuerzas_empotramiento_B  + barras[barra].vector_fuerzasB, "\n\n\n"
+
+		#barras[barra].vector_fuerzas_locales = np.dot(barras[barra].matriz_transformada, barras[barra].vector_fuerzas)
+		#print barras[barra].vector_fuerzas_locales, "\n"
 		#barras[barra]
 
 
