@@ -398,10 +398,10 @@ def main(argv):
 
 		barras[barra].matriz_fuerzas_empotramiento_B  + barras[barra].vector_fuerzasB
 
+
 		print "Barra ", i+1
-		
 		print "FA:\n" , barras[barra].matriz_fuerzas_empotramiento_A  + barras[barra].vector_fuerzasA
-		print "FA:\n" , barras[barra].matriz_fuerzas_empotramiento_B  + barras[barra].vector_fuerzasB, "\n\n\n"
+		print "FB:\n" , barras[barra].matriz_fuerzas_empotramiento_B  + barras[barra].vector_fuerzasB, "\n\n\n"
 
 		#barras[barra].vector_fuerzas_locales = np.dot(barras[barra].matriz_transformada, barras[barra].vector_fuerzas)
 		#print barras[barra].vector_fuerzas_locales, "\n"
