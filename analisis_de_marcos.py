@@ -8,9 +8,15 @@ from pprint import pprint as pp
 import json
 
 nodos = []
-barras = []
+barras = {}
 K_matriz = None
 R_matriz = []
+
+identidad_negativa = [
+	[-1,0,0],
+	[0,-1,0],
+	[0,0,-1]
+]
 
 def buscar_nodo_por_id(identificador):
 	for _nodo in nodos:
@@ -102,6 +108,8 @@ class Barra(object):
 		self.FyLocal = float(_datos[10])
 		self.distancia_fuerza_externa = float(_datos[11])
 
+		self.id  = int(_datos[12])
+
 		self.crear_matriz_transformacion()
 		self.crear_matriz_rigidez_elemento()
 		self.crear_matriz_K_ceros()
@@ -155,7 +163,7 @@ class Barra(object):
 		P = self.FyLocal 
 		L = self.L
 
-		print  "Pa", self.puntoA.x , " L:", L, " a:", a , " b:", b
+		Fx = -self.FxLocal / 2
 
 		M1 = ( P *  a * b ** 2 ) / L ** 2
 		M2 = (-P *  a ** 2 * b ) / L ** 2
@@ -163,11 +171,8 @@ class Barra(object):
 		Fy1 = ((P * b ** 2 ) / L ** 3 ) * (3 * a + b)
 		Fy2 = ((P * a ** 2 ) / L ** 3 ) * (3 * b + a)
 
-		print "Fy1" , " ", Fy1
-		print "Fy2" , " ", Fy2
-		print "M1" , " ", M1
-		print "M2" , " ", M2
-
+		self.matriz_fuerzas_empotramiento_A = [[Fx], [Fy1], [M1]]
+		self.matriz_fuerzas_empotramiento_B = [[Fx], [Fy2], [M2]]
 
 def mostrar_nodos():
 	for nodo in nodos:
@@ -189,10 +194,54 @@ def main(argv):
 			if _dato[0] == 'nodo':
 				nodos.append(Nodo(_dato))
 			elif _dato[0] == 'barra':
-				barras.append(Barra(_dato))
+				barra = Barra(_dato)
+				barras.update({barra.id : barra})
 
-	mostrar_nodos()
-	#mostrar_barras()
+	barras_por_nodo = {}
+		
+	for barra in barras.values():
+		if barra.puntoA.id in barras_por_nodo:
+			barras_por_nodo[barra.puntoA.id] += 1
+		else:
+			barras_por_nodo.update({barra.puntoA.id : 1})
+		if barra.puntoB.id in barras_por_nodo:
+			barras_por_nodo[barra.puntoB.id] += 1
+		else:
+			barras_por_nodo.update({barra.puntoB.id : 1})
+
+	nodo_extremo_barra = {}
+
+	nodos_comunes = []
+
+	for nodo in barras_por_nodo.keys():
+		if barras_por_nodo[nodo] >= 2:
+			nodos_comunes.append(nodo)
+
+	lado_barra = {}
+
+	for barra in barras.values():
+		if barra.puntoA.id in nodos_comunes:
+			lado_barra.update({barra.id : 'a' })
+		if barra.puntoB.id in nodos_comunes:
+			lado_barra.update({barra.id : 'b' })
+
+	matrices_suma  = np.matrix([[0],[0],[0]])
+
+	for id_barra in lado_barra.keys():
+		if lado_barra[id_barra] == 'a':
+			barra = barras[id_barra]
+			matrizFE = barra.matriz_fuerzas_empotramiento_A
+		else:
+			barra = barras[id_barra]
+			matrizFE = barra.matriz_fuerzas_empotramiento_B
+
+
+		matriz_transformada =  np.matrix(barra.matriz_transformada)
+		matriz_transformada_t =  matriz_transformada.transpose()
+		matrizFE = (np.matrix(matrizFE))
+
+		m_temp = np.dot(matriz_transformada_t, matrizFE)
+		matrices_suma.sum(m_temp)
 
 
 if __name__ == '__main__':

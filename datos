@@ -5,8 +5,8 @@ nodo 	2 		2 		3.46	u 		0 		0
 nodo 	3 		2 		7.46 	0 		u 		0
 nodo 	4 		6 		3.46 	0 		u 		0
 
-//		puntoA	tipo		puntoB 		type		E 	I	A	c_distribuidas	FxLocal		FyLocal		distA	
-barra 	1 		empotrado 		2 		c_des 		1	1	10		0			-8.66			5			2
-barra 	2 		c_des			3 		empotrado	1	1	10		0				0			10			1
-barra 	2 		c_des			4 		empotrado	1	1	10		0				0			0			0
+//		puntoA	tipo		puntoB 		type		E 	I	A	c_distribuidas	FxLocal		FyLocal		distA	#
+barra 	1 		empotrado 		2 		c_des 		1	1	10		0			-8.66			5			2	1
+barra 	2 		c_des			4 		empotrado	1	1	10		0				0			10			1	2
+barra 	2 		c_des			3 		empotrado	1	1	10		0				0			0			0	3
 
