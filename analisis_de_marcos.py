@@ -176,8 +176,9 @@ class Barra(object):
 		])
 		self.KBBI = np.dot(np.dot( self.matriz_transformada_transpuesta, self.KBB), self.matriz_transformada)
 
-		
-
+		Ks = np.concatenate((self.KAAI, self.KABI), axis=1)
+		Kss = np.concatenate((self.KBAI, self.KBBI), axis=1)
+		self.Ksss = np.concatenate((Ks, Kss), axis=0)
 
 
 	def crear_matriz_K_ceros(self):
@@ -371,7 +372,30 @@ def main(argv):
 	KGlobal.transpose()
 
 	vector_desplazamiento = np.dot(KGlobal.I, matriz_fuerzas_efectivas)
-	print vector_desplazamiento
+
+	_barras = barras.keys()
+	_barras.sort()
+
+	for i, i_barra in enumerate(_barras):
+		barra = int(i_barra)
+		k = (i * 3 - 3)
+		if i == 0:
+			barras[barra].matriz_deltaA = np.zeros((3,1))
+			barras[barra].matriz_deltaB = vector_desplazamiento[0:3]
+		elif i == len(_barras) - 1:
+			barras[barra].matriz_deltaB = np.zeros((3,1))
+			barras[barra].matriz_deltaA = vector_desplazamiento[k:k+3]
+		else:
+			barras[barra].matriz_deltaA = vector_desplazamiento[k:k+3]
+			barras[barra].matriz_deltaB = vector_desplazamiento[(i*3):(i*3)+3]
+
+		barras[barra].matriz_deltas = np.concatenate((barras[barra].matriz_deltaA, barras[barra].matriz_deltaB), axis=0)
+
+		barras[barra].vector_fuerzas = np.dot(barras[barra].Ksss, barras[barra].matriz_deltas)
+		print barras[barra].vector_fuerzas, "\n"
+		#barras[barra]
+
+
 	#np.savetxt("foo.csv", np.round(KGlobal, 2), delimiter=",", fmt='%1.2')
 
 
