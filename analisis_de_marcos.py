@@ -258,7 +258,6 @@ def main(argv):
 		else:
 			barras_por_nodo.update({barra.puntoB.id : 1})
 
-	print json.dumps(barras_por_nodo)
 	#se determina cuales son los nodos que comparten 2 o mas barras	
 	nodos_comunes = []
 
@@ -268,14 +267,12 @@ def main(argv):
 
 	#se busca el extremo de la barra que participa		
 	nodos_a_procesar = {}
-
-	print nodos_comunes
 	nodos_comunes.sort()
 
 	for nodo in nodos_comunes:
 
 		lado_barra = {}
-	#se selecciona si es el lado A o B de la barra (el que participa)	
+		#se selecciona si es el lado A o B de la barra (el que participa)	
 		for barra in barras.values():
 			if barra.puntoA.id == nodo:
 				lado_barra.update({barra.id : 'a' })
@@ -295,6 +292,9 @@ def main(argv):
 	matrices_de_fijacion = []
 	matriz_final_de_fijacion = None
 	matriz_fuerzas_efectivas = None
+
+
+	print json.dumps(nodos_a_procesar, indent=4, sort_keys=True)
 
 	nodos_a =  nodos_a_procesar.keys()
 	nodos_a.sort()
@@ -331,12 +331,6 @@ def main(argv):
 	for i in barras.keys():
 		barra = barras[i]
 		barra.crear_matriz_rigidez_elemento()
-		print "---------------------"
-		print barra.KAAI, "\n\n"
-		print barra.KABI, "\n\n"
-		print barra.KBAI, "\n\n"
-		print barra.KBBI, "\n\n"
-
 
 if __name__ == '__main__':
 	main(sys.argv)		
