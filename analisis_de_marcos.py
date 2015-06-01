@@ -395,10 +395,10 @@ def main(argv):
 
 		barras[barra].vector_fuerzasA =  np.dot(barras[barra].matriz_transformada, barras[barra].vector_fuerzas[:3])
 		barras[barra].vector_fuerzasB =  np.dot(barras[barra].matriz_transformada, barras[barra].vector_fuerzas[3:])
-
+		
 		barras[barra].matriz_fuerzas_empotramiento_B  + barras[barra].vector_fuerzasB
-
-
+	
+			
 		print "Barra ", i+1
 		print "FA:\n" , barras[barra].matriz_fuerzas_empotramiento_A  + barras[barra].vector_fuerzasA
 		print "FB:\n" , barras[barra].matriz_fuerzas_empotramiento_B  + barras[barra].vector_fuerzasB, "\n\n\n"
@@ -407,10 +407,10 @@ def main(argv):
 		#print barras[barra].vector_fuerzas_locales, "\n"
 		#barras[barra]
 
-
+	
 	#np.savetxt("foo.csv", np.round(KGlobal, 2), delimiter=",", fmt='%1.2')
 
 
-
+		
 if __name__ == '__main__':
 	main(sys.argv)		
