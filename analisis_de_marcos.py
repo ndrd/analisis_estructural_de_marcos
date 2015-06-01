@@ -136,7 +136,9 @@ class Barra(object):
 			[ 0, 0, 1]
 		]
 
-		self.matriz_transformada_transpuesta =  transpose(self.matriz_transformada)
+		self.matriz_transformada = np.matrix(self.matriz_transformada)
+		self.matriz_transformada_transpuesta =  self.matriz_transformada.transpose()
+
 		self.L = L
 
 	def crear_matriz_rigidez_elemento(self):
@@ -146,29 +148,37 @@ class Barra(object):
 		EI = self.E * self.I
 		L = self.L
 
-		self.KAA = [
+		self.KAA = np.matrix([
 				[  EA/L    ,      0      ,     0     ],
 				[    0     , 12*EI/L**3  , 6*EI/L**2  ], 
 				[    0     , 6*EI/L**2   , 4*EI/L      ]
-		]
+		])
+		self.KAAI = np.dot(np.dot( self.matriz_transformada_transpuesta, self.KAA), self.matriz_transformada)
 
-		self.KAB = [
+		self.KAB = np.matrix([
 				[ -EA/L    ,      0      ,     0      ],
 				[   0      , -12*EI/L**3 ,  6*EI/L**2 ],
 				[   0      , -6*EI/L**2  ,  2*EI/L    ],
-		]
+		])
+		self.KABI = np.dot(np.dot( self.matriz_transformada_transpuesta, self.KAB), self.matriz_transformada)
 
-		self.KBA = [
+		self.KBA = np.matrix([
 				[  -EA/L   ,      0      ,     0     ]  ,
 				[    0     , -12*EI/L**3 , -6*EI/L**2 ] ,
 				[    0     , 6*EI/L**2   , 2*EI/L     ]
-		]
+		])
+		self.KBAI = np.dot(np.dot( self.matriz_transformada_transpuesta, self.KBA), self.matriz_transformada)
 
-		self.KBB =[
-				[ EA/L    ,      0      ,     0     ]
-				[ 0      , 12*EI/L**3  , -6*EI/L**2 ]
+		self.KBB = np.matrix([
+				[ EA/L    ,      0      ,     0     ],
+				[ 0      , 12*EI/L**3  , -6*EI/L**2 ],
 				[ 0      , -6*EI/L**2  ,  4*EI/L    ]
-		]
+		])
+		self.KBBI = np.dot(np.dot( self.matriz_transformada_transpuesta, self.KBB), self.matriz_transformada)
+
+		
+
+
 
 	def crear_matriz_K_ceros(self):
 
@@ -321,8 +331,11 @@ def main(argv):
 	for i in barras.keys():
 		barra = barras[i]
 		barra.crear_matriz_rigidez_elemento()
-		print barra.Km, "\n\n\n\n"
 		print "---------------------"
+		print barra.KAAI, "\n\n"
+		print barra.KABI, "\n\n"
+		print barra.KBAI, "\n\n"
+		print barra.KBBI, "\n\n"
 
 
 if __name__ == '__main__':
