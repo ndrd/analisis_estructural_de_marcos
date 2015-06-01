@@ -9,7 +9,7 @@ import json
 
 nodos = []
 barras = {}
-KGlobal = None
+K_matriz = None
 R_matriz = []
 
 identidad_negativa = [
@@ -294,6 +294,8 @@ def main(argv):
 	matriz_fuerzas_efectivas = None
 
 
+	print json.dumps(nodos_a_procesar, indent=4, sort_keys=True)
+
 	nodos_a =  nodos_a_procesar.keys()
 	nodos_a.sort()
 
@@ -334,47 +336,36 @@ def main(argv):
 	# recorremos los nodos para crear la matriz enorme 
 	for nodo_i in nodos_a:
 		columna = []
-		
-		for nodo_j in nodos_a:
-			m_tmp = np.zeros((3,3))
 
+		for nodo_j in nodos_a:
 			#elementos de la diagonal
 			if nodo_i ==  nodo_j:
 				_barras = nodos_a_procesar[nodo_i].keys()
-
+				matrices_a_sumar = ""
 				for x in _barras:
 					if nodos_a_procesar[nodo_i][x] == 'a':
-						m_tmp = m_tmp + barras[x].KAAI
-					elif nodos_a_procesar[nodo_i][x] == 'b':
-						m_tmp = m_tmp + barras[x].KBBI
-
-
+						matrices_a_sumar += (" KAA" + str(x))
+					else:
+						matrices_a_sumar += (" KBB" + str(x))
+				columna.append(matrices_a_sumar)
 			# calcularlos de otra manera
 			else:
 				_barras_i = nodos_a_procesar[nodo_i].keys()
 				_barras_j = nodos_a_procesar[nodo_j].keys()
 
+				a = "0"
+
 				if _barras_i[0] == _barras_j[1]:
-					m_tmp=  barras[_barras_j[1]].KABI
+					a =  "KAB" + str(_barras_j[1])
 				elif _barras_j[0] == _barras_i[1]:
-					m_tmp =  barras[_barras_j[0]].KBAI
+					a= "KBA" + str(_barras_i[1])
+				columna.append(a)
 
-			columna.append(m_tmp)
-			
-			#print m_tmp ," \n\n"
-
-		z = np.concatenate(tuple(columna), axis=0)
-		matriz_K_a.append(z)
-
-	KGlobal = np.concatenate(tuple(matriz_K_a), axis=1)
-
-	KGlobal.transpose()
-
-	vector_desplazamiento = np.dot(KGlobal.I, matriz_fuerzas_efectivas)
-	print vector_desplazamiento
-	#np.savetxt("foo.csv", np.round(KGlobal, 2), delimiter=",", fmt='%1.2')
+		matriz_K_a.append(columna)
+		print " ----------------------- "
 
 
+	print np.matrix(matriz_K_a).transpose()
 
 if __name__ == '__main__':
 	main(sys.argv)		
