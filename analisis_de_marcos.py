@@ -30,9 +30,6 @@ class Nodo(object):
 		self.id = _datos[1]
 		self.x  = float(_datos[2])
 		self.y  = float(_datos[3])
-		self.fx = _datos[4]
-		self.fy = _datos[5]
-		self.momento = _datos[6]
 
 	def extraer_fuerzas( self, R ):
 
@@ -113,7 +110,15 @@ class Barra(object):
 		self.crear_matriz_transformacion()
 		self.crear_matriz_rigidez_elemento()
 		self.crear_matriz_K_ceros()
-		self.calcular_fuerzas_empotramiento_en_y()
+
+
+		# las cargas distribuidas son cero 
+		if self.cargas_distribuidas != "u":
+			self.calcular_fuerzas_distribuidas()
+		else:
+			self.calcular_fuerzas_empotramiento_en_y()
+
+
 
 
 	def crear_matriz_transformacion(self):
@@ -141,12 +146,29 @@ class Barra(object):
 		EI = self.E * self.I
 		L = self.L
 
-		self.Km.append([  EA/L    ,      0      ,     0       ,   -EA/L    ,      0      ,     0      ])
-		self.Km.append([    0     , 12*EI/L**3  , 6*EI/L**2   ,     0      , -12*EI/L**3 ,  6*EI/L**2 ])
-		self.Km.append([    0     , 6*EI/L**2   , 4*EI/L      ,     0      , -6*EI/L**2  ,  2*EI/L    ])
-		self.Km.append([  -EA/L   ,      0      ,     0       ,    EA/L    ,      0      ,     0      ])
-		self.Km.append([    0     , -12*EI/L**3 , -6*EI/L**2  ,     0      , 12*EI/L**3  , -6*EI/L**2 ])
-		self.Km.append([    0     , 6*EI/L**2   , 2*EI/L      ,     0      , -6*EI/L**2  ,  4*EI/L    ])
+		self.KAA = [
+				[  EA/L    ,      0      ,     0     ],
+				[    0     , 12*EI/L**3  , 6*EI/L**2  ], 
+				[    0     , 6*EI/L**2   , 4*EI/L      ]
+		]
+
+		self.KAB = [
+				[ -EA/L    ,      0      ,     0      ],
+				[   0      , -12*EI/L**3 ,  6*EI/L**2 ],
+				[   0      , -6*EI/L**2  ,  2*EI/L    ],
+		]
+
+		self.KBA = [
+				[  -EA/L   ,      0      ,     0     ]  ,
+				[    0     , -12*EI/L**3 , -6*EI/L**2 ] ,
+				[    0     , 6*EI/L**2   , 2*EI/L     ]
+		]
+
+		self.KBB =[
+				[ EA/L    ,      0      ,     0     ]
+				[ 0      , 12*EI/L**3  , -6*EI/L**2 ]
+				[ 0      , -6*EI/L**2  ,  4*EI/L    ]
+		]
 
 	def crear_matriz_K_ceros(self):
 
@@ -174,6 +196,22 @@ class Barra(object):
 		self.matriz_fuerzas_empotramiento_A = [[Fx], [Fy1], [M1]]
 		self.matriz_fuerzas_empotramiento_B = [[Fx], [Fy2], [M2]]
 
+	def calcular_fuerzas_distribuidas(self):
+				
+		W = self.cargas_distribuidas 
+		L = self.L
+
+		M1 = ( W * L ** 2 ) / 12
+		M2 = -M1
+
+		Fy1 = (W * L) /  2
+		Fy2 = Fy1
+
+		self.matriz_fuerzas_empotramiento_A = [[0], [Fy1], [M1]]
+		self.matriz_fuerzas_empotramiento_B = [[0], [Fy2], [M2]]
+
+
+
 def mostrar_nodos():
 	for nodo in nodos:
 		print json.dumps(nodo.__dict__)
@@ -186,8 +224,9 @@ def mostrar_barras():
 
 
 def main(argv):
+	#leemos los datos del archivo de entrada
 	datos = [linea.rstrip('\n').split() for linea in open(argv[1])]
-
+	#para cada renglon construimos la barra o el nodo, segun sea el caso
 	for _dato in datos:
 
 		if len(_dato) != 0:
@@ -196,7 +235,7 @@ def main(argv):
 			elif _dato[0] == 'barra':
 				barra = Barra(_dato)
 				barras.update({barra.id : barra})
-
+	#se determina el numero de barras que comparten un nodo			
 	barras_por_nodo = {}
 		
 	for barra in barras.values():
@@ -209,39 +248,81 @@ def main(argv):
 		else:
 			barras_por_nodo.update({barra.puntoB.id : 1})
 
-	nodo_extremo_barra = {}
-
+	print json.dumps(barras_por_nodo)
+	#se determina cuales son los nodos que comparten 2 o mas barras	
 	nodos_comunes = []
 
 	for nodo in barras_por_nodo.keys():
 		if barras_por_nodo[nodo] >= 2:
 			nodos_comunes.append(nodo)
 
-	lado_barra = {}
+	#se busca el extremo de la barra que participa		
+	nodos_a_procesar = {}
 
-	for barra in barras.values():
-		if barra.puntoA.id in nodos_comunes:
-			lado_barra.update({barra.id : 'a' })
-		if barra.puntoB.id in nodos_comunes:
-			lado_barra.update({barra.id : 'b' })
+	print nodos_comunes
+	nodos_comunes.sort()
 
-	matrices_suma  = np.matrix([[0],[0],[0]])
+	for nodo in nodos_comunes:
 
-	for id_barra in lado_barra.keys():
-		if lado_barra[id_barra] == 'a':
-			barra = barras[id_barra]
-			matrizFE = barra.matriz_fuerzas_empotramiento_A
+		lado_barra = {}
+	#se selecciona si es el lado A o B de la barra (el que participa)	
+		for barra in barras.values():
+			if barra.puntoA.id == nodo:
+				lado_barra.update({barra.id : 'a' })
+			if barra.puntoB.id == nodo:
+				lado_barra.update({barra.id : 'b' })
+
+
+	#los nodos a procesar seran los que usaremos para encontrar las Ffij			
+		if nodo in nodos_a_procesar.keys():
+			nodos_a_procesar[nodo].update({lado_barra})
 		else:
-			barra = barras[id_barra]
-			matrizFE = barra.matriz_fuerzas_empotramiento_B
+			nodos_a_procesar[nodo] = lado_barra
 
 
-		matriz_transformada =  np.matrix(barra.matriz_transformada)
-		matriz_transformada_t =  matriz_transformada.transpose()
-		matrizFE = (np.matrix(matrizFE))
+	#se determinara la matriz de fuerzas de fijacion para cada nodo de interes 
+	#(posteriormente se uniran las ncesarias para formar el vector Ffij)	
+	matrices_de_fijacion = []
+	matriz_final_de_fijacion = None
+	matriz_fuerzas_efectivas = None
 
-		m_temp = np.dot(matriz_transformada_t, matrizFE)
-		matrices_suma.sum(m_temp)
+	nodos_a =  nodos_a_procesar.keys()
+	nodos_a.sort()
+
+
+	for nodo in nodos_a:
+
+		lado_barra = nodos_a_procesar[nodo]
+
+		matrices_suma  = np.zeros((3,1))
+
+		for id_barra in lado_barra.keys():
+			#determinamos el lado de la barra a operar
+			if lado_barra[id_barra] == 'a':
+				barra = barras[id_barra]
+				matrizFE = barra.matriz_fuerzas_empotramiento_A
+			else:
+				barra = barras[id_barra]
+				matrizFE = barra.matriz_fuerzas_empotramiento_B
+
+			matriz_transformada =  np.matrix(barra.matriz_transformada)
+			matriz_transformada_t =  matriz_transformada.transpose()
+			matrizFE = (np.matrix(matrizFE))
+
+			m_temp = np.dot(matriz_transformada_t, matrizFE)
+			matrices_suma =  matrices_suma + m_temp
+
+		matrices_de_fijacion.append(matrices_suma)
+
+	# unimos las matrices de fijacion en una coluna
+	matriz_final_de_fijacion = np.concatenate((tuple(matrices_de_fijacion)), axis=0)
+	matriz_fuerzas_efectivas = matriz_final_de_fijacion * -1
+
+	for i in barras.keys():
+		barra = barras[i]
+		barra.crear_matriz_rigidez_elemento()
+		print barra.Km, "\n\n\n\n"
+		print "---------------------"
 
 
 if __name__ == '__main__':
